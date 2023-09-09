@@ -1,6 +1,7 @@
 ﻿#include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <cstdint>
 
 //分离PCM16LE双声道音频采样数据的左声道和右声道
 // PCM 双声道存储方式 : (l0,r0) (l1,r1) .......
@@ -184,29 +185,29 @@ int simplest_pcm16le_cut_singlechannel(char *url, int start_num, int dur_num) {
  * @param sample_rate  Sample rate of PCM file.
  * @param wavepath     Output WAVE file.
  */
- // 值得注意的是：！！！！！  最好使用平台无关类型，如 uint16_t、uint32_t、uint64_t 等等
+// 值得注意的是：！！！！！  最好使用平台无关类型，如 uint16_t、uint32_t、uint64_t 等等
 int simplest_pcm16le_to_wave(const char *pcmpath, int channels, int sample_rate, const char *wavepath) {
 
     typedef struct WAVE_HEADER {
         char fccID[4];                      // 用于存储 RIFF chunk 的标识符。对于 WAV 文件，这个值通常为 "RIFF"
-        unsigned long dwSize;               // 文件的总大小, 不包括 fccID 和 dwSize 本身
+        uint32_t dwSize;               // 文件的总大小, 不包括 fccID 和 dwSize 本身
         char fccType[4];                    // 用于存储文件的类型。对于 WAV 文件，这个值通常为 "WAVE"
     } WAVE_HEADER;
 
     typedef struct WAVE_FMT {
         char fccID[4];                      // 用于存储 Format chunk 的标识符。对于 WAV 文件，这个值通常为 "fmt "
-        unsigned long dwSize;               // Format chunk 的大小（不包括 fccID 和 dwSize 本身）2+2+4+4+2+2=16
-        unsigned short wFormatTag;          // 表示音频数据的格式。对于 PCM 数据，这个值为 1
-        unsigned short wChannels;           // 表示音频数据的声道数.对于立体声数据，这个值为 2
-        unsigned long dwSamplesPerSec;      // 表示音频数据的采样率,  CD 音质的音频数据，这个值为 44100
-        unsigned long dwAvgBytesPerSec;     // 表示音频数据的平均字节数每秒。这个值等于 dwSamplesPerSec * wBlockAlign
-        unsigned short wBlockAlign;         // 表示音频数据的块对齐大小。这个值等于 (uiBitsPerSample * wChannels) / 8
-        unsigned short uiBitsPerSample;     // 表示音频数据的位深度，此处为16
+        uint32_t dwSize;               // Format chunk 的大小（不包括 fccID 和 dwSize 本身）2+2+4+4+2+2=16
+        uint16_t wFormatTag;          // 表示音频数据的格式。对于 PCM 数据，这个值为 1
+        uint16_t wChannels;           // 表示音频数据的声道数.对于立体声数据，这个值为 2
+        uint32_t dwSamplesPerSec;      // 表示音频数据的采样率,  CD 音质的音频数据，这个值为 44100
+        uint32_t dwAvgBytesPerSec;     // 表示音频数据的平均字节数每秒。这个值等于 dwSamplesPerSec * wBlockAlign
+        uint16_t wBlockAlign;         // 表示音频数据的块对齐大小。这个值等于 (uiBitsPerSample * wChannels) / 8
+        uint16_t uiBitsPerSample;     // 表示音频数据的位深度，此处为16
     } WAVE_FMT;
 
     typedef struct WAVE_DATA {
         char fccID[4];                      // 用于存储 Data chunk 的标识符。对于 WAV 文件，这个值通常为 "data"
-        unsigned long dwSize;               // 表示 Data chunk 的大小（不包括 fccID 和 dwSize 本身），即音频数据的字节数
+        uint32_t dwSize;               // 表示 Data chunk 的大小（不包括 fccID 和 dwSize 本身），即音频数据的字节数
     } WAVE_DATA;
 
     // 初始化文件
@@ -248,15 +249,15 @@ int simplest_pcm16le_to_wave(const char *pcmpath, int channels, int sample_rate,
     fseek(fpout, sizeof(WAVE_DATA), SEEK_CUR);       // 将 WAVE_DATA的位置预留出来
 
     // 计算 pcm数据的大小，并将数据先写入文件对应位置
+    fread(&m_pcmData, sizeof(uint16_t), 1, fp);
     while (!feof(fp)) {
         pcmData.dwSize += 2;
-        fread(&m_pcmData, sizeof(unsigned short), 1, fp);
-        fwrite(&m_pcmData, sizeof(unsigned short), 1, fpout);
+        fwrite(&m_pcmData, sizeof(uint16_t), 1, fpout);
+        fread(&m_pcmData, sizeof(uint16_t), 1, fp);
     }
 
     // 计算 pcmHEADER.dwSize 的值
-    //  total = RIFF(header) + FORMAT + DATA + PCM源文件长度
-    pcmHEADER.dwSize = 12 + 24 + 8 + pcmData.dwSize;
+    pcmHEADER.dwSize = 44 + pcmData.dwSize - 8;
 
     // 重置文件指针 ，将指针移动到文件的开头
     rewind(fpout);
