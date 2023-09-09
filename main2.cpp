@@ -184,6 +184,7 @@ int simplest_pcm16le_cut_singlechannel(char *url, int start_num, int dur_num) {
  * @param sample_rate  Sample rate of PCM file.
  * @param wavepath     Output WAVE file.
  */
+ // 值得注意的是：！！！！！  最好使用平台无关类型，如 uint16_t、uint32_t、uint64_t 等等
 int simplest_pcm16le_to_wave(const char *pcmpath, int channels, int sample_rate, const char *wavepath) {
 
     typedef struct WAVE_HEADER {
