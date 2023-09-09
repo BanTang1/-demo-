@@ -249,6 +249,11 @@ int simplest_pcm16le_to_wave(const char *pcmpath, int channels, int sample_rate,
     fseek(fpout, sizeof(WAVE_DATA), SEEK_CUR);       // 将 WAVE_DATA的位置预留出来
 
     // 计算 pcm数据的大小，并将数据先写入文件对应位置
+    /**
+     *  feof判断文件结束是通过读取函数fread/fscanf等返回错误来识别的，故而判断文件是否结束应该是在读取函数之后进行判断。
+     *  比如，在while循环读取一个文件时，如果是在读取函数之前进行判断，则如果文件最后一行是空白行，可能会造成内存错误。
+     *  因此，就应该这样写，如果按照之前的写法会多两个奇奇怪怪的字节!!!!!!
+     */
     fread(&m_pcmData, sizeof(uint16_t), 1, fp);
     while (!feof(fp)) {
         pcmData.dwSize += 2;
