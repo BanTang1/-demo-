@@ -312,23 +312,23 @@ int simplest_rgb24_split(char *url, int w, int h, int num) {
  */
 int simplest_rgb24_to_bmp(const char *rgb24path, int width, int height, const char *bmppath) {
     typedef struct {
-        long imageSize;
-        long blank;
-        long startPosition;
+        u_int32_t imageSize;
+        u_int32_t blank;
+        u_int32_t startPosition;
     } BmpHead;
 
     typedef struct {
-        long Length;
-        long width;
-        long height;
-        unsigned short colorPlane;
-        unsigned short bitColor;
-        long zipFormat;
-        long realSize;
-        long xPels;
-        long yPels;
-        long colorUse;
-        long colorImportant;
+        u_int32_t Length;
+        u_int32_t width;
+        u_int32_t height;
+        u_int16_t colorPlane;
+        u_int16_t bitColor;
+        u_int32_t zipFormat;
+        u_int32_t realSize;
+        u_int32_t xPels;
+        u_int32_t yPels;
+        u_int32_t colorUse;
+        u_int32_t colorImportant;
     } InfoHead;
 
     int i = 0, j = 0;
@@ -393,7 +393,5 @@ int main(int argc, char *argv[]) {
 //    simplest_yuv420_border("carphone_qcif_420p.yuv", 176, 144, 10, 382);
 //    simplest_yuv420_graybar(640, 360,0,255,10,"graybar_640x360.yuv");
 //    simplest_rgb24_split("rgb24_cie1931.rgb", 500, 500, 1);
-//    simplest_rgb24_to_bmp("rgb24_cie1931.rgb",500,500,"output_lena.bmp");
-
-    printf("111111111111");
+    simplest_rgb24_to_bmp("lena_256x256_rgb24.rgb",256,256,"output_lena.bmp");
 }
